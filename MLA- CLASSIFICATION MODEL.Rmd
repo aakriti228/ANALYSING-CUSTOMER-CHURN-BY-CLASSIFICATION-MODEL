@@ -1,0 +1,342 @@
+---
+title: "MLA CIA 4"
+author: "AKRITI TOPPO"
+date: "2023-09-20"
+output: word_document
+---
+
+
+```{r include=FALSE}
+# Importing required library
+install.packages("readxl")
+install.packages("dplyr")
+install.packages("tidyverse")
+install.packages("ggplot2")
+library(readxl)
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+```
+
+```{r}
+# Assigning dataset to variables
+library(readr)
+data <- read_csv("C:/Users/HP/Downloads/MLA CIA - 4.csv")
+View(data)
+```
+
+```{r}
+# Finding out missing value in the dataset
+
+sum(is.na(data))
+
+colSums(is.na(data))
+
+```
+
+```{r}
+# Removing the NULL value in the dataset
+
+data = na.omit(data)
+
+sum(is.na(data))
+
+```
+
+
+
+# ID3
+```{r}
+
+
+# Load necessary libraries
+library(rpart)
+library(rpart.plot)
+library(caret)
+
+# Split the data into training and tes�ng sets
+set.seed(123)
+
+id3_data = data[,-1]
+
+trainIndex <- createDataPartition(id3_data$Target, p = .7, list = FALSE, times = 1)
+
+dataTrain <- id3_data[ trainIndex,]
+dataTest <- id3_data[-trainIndex,]
+
+# Fit the ID3 model (technically, rpart uses the CART algorithm, which is similar to ID3)
+id3_model <- rpart(Target ~ ., data = dataTrain, method = "class")
+
+id3_model
+# Visualize the decision tree
+rpart.plot(id3_model, extra = 106)
+
+# Predict on the test data
+predictions <- predict(id3_model, dataTest, type = "class")
+
+
+# Check the level of predictions and Target variable in dataset
+levels(predictions)
+levels(dataTest$Target)
+
+# Converting into string
+str(dataTest$Target)
+
+# Factoring the Target variable
+dataTest$Target <- as.factor(dataTest$Target)
+levels(dataTest$Target) <- c("0", "1")
+
+
+# Check the levels of prediction and Target variable
+levels(predictions) <- levels(dataTest$Target)
+
+# Evaluate the model
+confusionMatrix(predictions, dataTest$Target)
+
+# Loading required package for the ROC curve
+library(pROC)
+library(ggplot2)
+
+# Create ROC curve
+roc_curve <- roc(response = as.numeric(dataTest$Target) - 1, predictor = as.numeric(predictions) - 1)
+
+# Plot the ROC curve
+plot(roc_curve, main = "ROC Curve for ID3 (CART) Model", print.auc = TRUE)
+
+# Add a diagonal reference line (random classifier)
+abline(a = 0, b = 1, lty = 2, col = "purple")
+
+# Calculate and print the AUC (Area Under the Curve)
+auc_score <- auc(roc_curve)
+cat("AUC:", auc_score, "\n")
+
+```
+
+
+# C 5.0
+```{r}
+
+#C5.0
+
+# Load necessary libraries
+library(C50)
+library(caret)
+
+# Split the data into training and tes�ng sets
+set.seed(123)
+c50_data = data[,-1]
+
+trainIndex <- createDataPartition(c50_data$Target, p = .7, list = FALSE,times = 1)
+
+c50_dataTrain <- c50_data[ trainIndex,]
+c50_dataTest <- c50_data[-trainIndex,]
+
+# Build the C5.0 model
+c50_data$Target <- as.factor(c50_data$Target)
+C5.0_model <- C5.0(c50_data$Target ~ ., data = c50_data)
+
+
+# Print a summary of the model
+summary(C5.0_model)
+
+# Check the level of predictions and Target variable in dataset
+levels(predictions)
+levels(c50_dataTest$Target)
+
+# Converting into string
+str(c50_dataTest$Target)
+
+# Factoring the Target variable
+c50_dataTest$Target <- as.factor(c50_dataTest$Target)
+levels(c50_dataTest$Target) <- c("0", "1")
+
+
+# Check the levels of prediction and Target variable
+levels(predictions) <- levels(c50_dataTest$Target)
+
+# Ploting C5.0 model
+plot(C5.0_model)
+
+# Predict on the test data
+predictions <- predict(C5.0_model, c50_dataTest)
+
+# Evaluate the model
+confusionMatrix(predictions, c50_dataTest$Target)
+
+
+# Ploting ROC curve
+
+library(pROC)
+library(ggplot2)
+
+# Create ROC curve
+roc_curve <- roc(response = as.numeric(c50_dataTest$Target) - 1, predictor = as.numeric(predictions) - 1)
+
+# Plot the ROC curve
+plot(roc_curve, main = "ROC Curve for C5.0 Model", print.auc = TRUE)
+
+# Add a diagonal reference line (random classifier)
+abline(a = 0, b = 1, lty = 2, col = "red")
+
+# Calculate and print the AUC (Area Under the Curve)
+auc_score <- auc(roc_curve)
+cat("AUC:", auc_score, "\n")
+
+
+
+
+
+```
+```{r}
+# CART
+
+# Load necessary libraries
+library(rpart)
+library(rpart.plot)
+library(caret)
+
+# Split the data into training and tesing sets
+set.seed(123)
+cart_data = data[,-1]
+
+trainIndex <- createDataPartition(cart_data$Target, p = .7, list = FALSE, times = 1)
+cart_dataTrain <- cart_data[ trainIndex,]
+cart_dataTest <- cart_data[-trainIndex,]
+
+# Check the lengths of 'Age' and 'Target' in the training dataset
+length(cart_dataTrain$Age)
+length(cart_dataTrain$Target)
+
+
+
+# Build the CART model
+cart_model <- rpart(Target ~ ., data = cart_dataTrain, method = "class")
+
+
+# Print a summary of the model
+print(cart_model)
+
+# Predict on the test data
+predictions <- predict(cart_model, cart_dataTest, type = "class")
+
+
+# Plot the decision tree
+rpart.plot(cart_model, extra = 106)
+```
+
+# LOGESTIC REGRESSION
+```{r}
+# Logestic Regression
+
+# Load required library
+library(caret)
+
+# Split the data into training and tesing sets
+set.seed(123)
+lr_data = data[,-1]
+
+# Fitting logestic regression model
+lr_data$Target <- as.factor(lr_data$Target)
+lr_model <- glm(Target ~ ., family = "binomial", data = lr_data)
+
+summary(lr_model)
+
+# Odds Ratio
+exp(coef(lr_model))
+
+
+# Confusion martix
+predicted_probs <- predict(lr_model, type = "response")
+predicted_classes <- ifelse(predicted_probs > 0.5, 1, 0)
+
+confusionMatrix(as.factor(predicted_classes), lr_data$Target)
+
+# Creating ROC curve 
+library(ROCR)
+
+# Create a prediction object
+prediction_obj <- prediction(predicted_probs, lr_data$Target)
+
+# Create a performance object
+performance_obj <- performance(prediction_obj, "tpr", "fpr")
+
+# Plot the ROC curve
+plot(performance_obj, main = "ROC Curve for Logistic Regression Model")
+abline(h = 0, v = 1, col = "gray")
+
+
+```
+
+# NAIVE BAYES
+```{r}
+# NAIVE BAYES
+
+# Required library
+library(e1071)
+
+# Split the data into training and tesing sets
+set.seed(123)
+nb_data = data[,-1]
+
+train_indices <- sample(1:nrow(nb_data),0.7*nrow(nb_data))
+train_data <- nb_data[train_indices, ]
+test_data <- nb_data[-train_indices, ]
+
+# Fitting naive bayes model in the dataset
+nb_model <- naiveBayes(Target ~ ., data = train_data)
+nb_model
+
+#Predict the outcomes on the testing set:
+predictions_nb <- predict(nb_model, test_data)
+
+
+# Compare the predicted outcomes with the actual outcomes
+confusion_matrix <- table(test_data$Target,predictions_nb)
+print(confusion_matrix)
+
+
+library(pROC)
+
+
+probabilities_nb <- predict(nb_model,test_data, type = "raw")
+
+roc_obj <- roc(test_data$Target, probabilities_nb[,2], levels = c(0, 1))
+
+plot(roc_obj, main="ROC Curve for Naive BayesModel")
+
+auc(roc_obj)
+
+
+```
+
+# SVM
+```{r}
+# Loading required library 
+library(e1071)
+
+# Split the data into training and tesing sets
+set.seed(123)
+svm_data = data[,-1]
+
+
+train_indices <- sample(1:nrow(data),0.7*nrow(data))
+train_data <- svm_data[train_indices, ]
+test_data <- svm_data[-train_indices, ]
+
+# Fitiing SVM model in the dataset 
+svm_model <- svm(Target ~ ., data = train_data, kernel = "radial",cost = 10, scale = TRUE)
+
+# SVM Model summary
+summary(svm_model)
+
+plot(svm_model, train_data)
+
+predictions_svm <- predict(svm_model,test_data)
+confusion_matrix <- table(test_data$Target,predictions_svm)
+confusion_matrix
+
+print(confusion_matrix)
+
+
+```
+
